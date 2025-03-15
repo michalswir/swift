@@ -1,0 +1,70 @@
+# Define services for the application and MongoDB database
+services:
+
+  # The application service (Go app)
+  app:
+    # Build the application container
+    build:
+      # Set the build context (current directory)
+      context: .
+      # Specify the Dockerfile to use for building the image
+      dockerfile: Dockerfile
+      # Define the build target (use the "prod" stage from the Dockerfile)
+      target: prod
+    # Restart policy: restart unless the container is manually stopped
+    restart: unless-stopped
+    # Map the ports from the container to the host
+    ports:
+      - ${PORT}:${PORT}
+    # Environment variables for the app (e.g., configuration settings)
+    environment:
+      APP_ENV: ${APP_ENV} # Application environment (development, production, etc.)
+      PORT: ${PORT} # The port the application will run on
+      BLUEPRINT_DB_HOST: ${BLUEPRINT_DB_HOST} # MongoDB hostname
+      BLUEPRINT_DB_PORT: ${BLUEPRINT_DB_PORT} # MongoDB port
+      BLUEPRINT_DB_USERNAME: ${BLUEPRINT_DB_USERNAME} # MongoDB username
+      BLUEPRINT_DB_ROOT_PASSWORD: ${BLUEPRINT_DB_ROOT_PASSWORD} # MongoDB root password
+    # Define a dependency on the MongoDB service, ensuring the app waits until MongoDB is healthy
+    depends_on:
+      mongo_bp:
+        condition: service_healthy
+    # Define the network the container should connect to (e.g., for service communication)
+    networks:
+      - blueprint
+
+  # MongoDB service for the application
+  mongo_bp:
+    # Use the official MongoDB image
+    image: mongo:latest
+    # Restart policy: restart unless the container is manually stopped
+    restart: unless-stopped
+    # Environment variables for MongoDB configuration
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${BLUEPRINT_DB_USERNAME} # MongoDB root username
+      MONGO_INITDB_ROOT_PASSWORD: ${BLUEPRINT_DB_ROOT_PASSWORD} # MongoDB root password
+    # Map the MongoDB port from the container to the host
+    ports:
+      - "${BLUEPRINT_DB_PORT}:27017"
+    # Use a named volume for MongoDB data storage
+    volumes:
+      - mongo_volume_bp:/data/db
+    # Healthcheck to ensure MongoDB is ready before the app starts
+    healthcheck:
+      # Use the 'mongosh' command to ping the MongoDB server
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      # Healthcheck settings: test interval, timeout, retries, start period
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    # Define the network for MongoDB (for service communication)
+    networks:
+      - blueprint
+
+# Define named volumes
+volumes:
+  mongo_volume_bp:
+
+    # Define the network to allow communication between services
+networks:
+  blueprint:
