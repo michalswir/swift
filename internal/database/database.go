@@ -25,15 +25,15 @@ type service struct {
 
 // Store the MongoDB host and port
 var (
-	host     = os.Getenv("BLUEPRINT_DB_HOST")
-	port     = os.Getenv("BLUEPRINT_DB_PORT")
-	username = os.Getenv("BLUEPRINT_DB_USERNAME")
-	password = os.Getenv("BLUEPRINT_DB_ROOT_PASSWORD")
+	host = os.Getenv("BLUEPRINT_DB_HOST")
+	port = os.Getenv("BLUEPRINT_DB_PORT")
+	// username = os.Getenv("BLUEPRINT_DB_USERNAME")
+	// password = os.Getenv("BLUEPRINT_DB_ROOT_PASSWORD")
 )
 
 // Initializes a MongoDB client and returns a new Service instance
 func New() Service {
-	credential := options.Credential{Username: username, Password: password}
+	credential := options.Credential{Username: "melkey", Password: "password1234"}
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s", host, port)).SetAuth(credential))
 	if err != nil {
 		log.Fatal(err)
