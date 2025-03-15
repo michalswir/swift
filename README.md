@@ -31,6 +31,3 @@ Fetch data from <i>"Interns_2025_SWIFT_CODES"</i>
 ```
 make fetch-data
 ```
-## License
-
-This project is licensed under the MIT License
